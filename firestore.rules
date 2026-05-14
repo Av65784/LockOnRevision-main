@@ -1,0 +1,51 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownsUserDoc(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow create: if ownsUserDoc(userId)
+        && request.resource.data.plan == 'Free'
+        && !request.resource.data.keys().hasAny(['paymentStatus', 'proUntil']);
+      allow read: if ownsUserDoc(userId);
+      allow update: if ownsUserDoc(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'plan',
+          'paymentStatus',
+          'proUntil'
+        ]);
+      allow delete: if false;
+
+      match /subjects/{document} {
+        allow read, create, update, delete: if ownsUserDoc(userId);
+      }
+
+      match /units/{document} {
+        allow read, create, update, delete: if ownsUserDoc(userId);
+      }
+
+      match /lessons/{document} {
+        allow read, create, update, delete: if ownsUserDoc(userId);
+      }
+
+      match /questions/{document} {
+        allow read, create, update, delete: if ownsUserDoc(userId);
+      }
+
+      match /answers/{document} {
+        allow read, create, update, delete: if ownsUserDoc(userId);
+      }
+
+      match /files/{document} {
+        allow read, create, update, delete: if ownsUserDoc(userId);
+      }
+    }
+  }
+}
