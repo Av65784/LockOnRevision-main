@@ -10,41 +10,60 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data;
+    }
+
+    function isAdmin() {
+      return signedIn() && userDoc(request.auth.uid).role == 'admin';
+    }
+
     match /users/{userId} {
+      allow read: if signedIn();
       allow create: if ownsUserDoc(userId)
-        && request.resource.data.plan == 'Free'
-        && !request.resource.data.keys().hasAny(['paymentStatus', 'proUntil']);
-      allow read: if ownsUserDoc(userId);
+        && request.resource.data.xp == 0
+        && request.resource.data.energy == 0
+        && request.resource.data.totalScore == 0
+        && (request.resource.data.role == 'user' || request.resource.data.role == 'admin');
       allow update: if ownsUserDoc(userId)
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
-          'plan',
-          'paymentStatus',
-          'proUntil'
-        ]);
+          'email',
+          'createdAt',
+          'role'
+        ])
+        || isAdmin();
       allow delete: if false;
 
-      match /subjects/{document} {
-        allow read, create, update, delete: if ownsUserDoc(userId);
+      match /subjects/{docId} {
+        allow read, write: if ownsUserDoc(userId) || isAdmin();
       }
 
-      match /units/{document} {
-        allow read, create, update, delete: if ownsUserDoc(userId);
+      match /units/{docId} {
+        allow read, write: if ownsUserDoc(userId) || isAdmin();
       }
 
-      match /lessons/{document} {
-        allow read, create, update, delete: if ownsUserDoc(userId);
+      match /subUnits/{docId} {
+        allow read, write: if ownsUserDoc(userId) || isAdmin();
       }
 
-      match /questions/{document} {
-        allow read, create, update, delete: if ownsUserDoc(userId);
+      match /lessons/{docId} {
+        allow read, write: if ownsUserDoc(userId) || isAdmin();
       }
 
-      match /answers/{document} {
-        allow read, create, update, delete: if ownsUserDoc(userId);
+      match /questions/{docId} {
+        allow read, write: if ownsUserDoc(userId) || isAdmin();
       }
 
-      match /files/{document} {
-        allow read, create, update, delete: if ownsUserDoc(userId);
+      match /answers/{docId} {
+        allow read, write: if ownsUserDoc(userId) || isAdmin();
+      }
+
+      match /files/{docId} {
+        allow read, write: if ownsUserDoc(userId) || isAdmin();
+      }
+
+      match /forgeSources/{docId} {
+        allow read, write: if ownsUserDoc(userId) || isAdmin();
       }
     }
   }

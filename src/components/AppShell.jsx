@@ -1,98 +1,84 @@
-import { BookOpenCheck, Flame, Gem, LayoutDashboard, LogOut, Sparkles, Zap } from "lucide-react";
+import { LogOut, Sparkles, Trophy, Zap } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { AiSidebar } from "./AiSidebar.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
-
-const navItems = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/revision", label: "Revision", icon: BookOpenCheck },
-  { to: "/forge", label: "Forge", icon: Sparkles },
-  { to: "/pro", label: "Pro", icon: Gem },
-];
+import { canAccessAdmin } from "../utils/permissions.js";
 
 export function AppShell({ children }) {
-  const { profile, logout } = useAuth();
+  const { isFirebaseConfigured, logout, profile, user } = useAuth();
+  const showAdmin = canAccessAdmin(profile, user?.email);
 
   return (
-    <main className="min-h-screen bg-paper text-ink">
-      <div className="mx-auto flex min-h-screen max-w-7xl gap-5 px-4 py-4 lg:px-6">
-        <aside className="hidden w-64 shrink-0 flex-col rounded-lg border border-black/10 bg-white/80 p-4 shadow-soft backdrop-blur lg:flex">
-          <div className="mb-8">
-            <div className="flex items-center gap-3">
-              <div className="grid h-11 w-11 place-items-center rounded-lg bg-ink text-paper">
-                <Zap size={22} />
-              </div>
-              <div>
-                <p className="text-lg font-black tracking-tight">LockOn</p>
-                <p className="text-xs text-slate-500">Revision engine</p>
-              </div>
+    <main className="min-h-screen bg-slate-50 text-slate-950">
+      <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/85 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+          <NavLink to="/app" className="flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-blue-600 to-cyan-400 text-white">
+              <Zap size={20} />
+            </span>
+            <div>
+              <p className="font-black tracking-tight">LockOn Revision</p>
+              <p className="text-xs text-slate-500">{profile?.name || "Local Learner"}</p>
             </div>
-          </div>
+          </NavLink>
 
-          <nav className="grid gap-2">
-            {navItems.map((item) => (
+          <nav className="flex items-center gap-2">
+            <NavLink
+              to="/app"
+              className={({ isActive }) =>
+                `rounded-lg px-3 py-2 text-sm font-bold ${isActive ? "bg-blue-50 text-blue-700" : "text-slate-600"}`
+              }
+            >
+              Dashboard
+            </NavLink>
+            <NavLink
+              to="/forge"
+              className={({ isActive }) =>
+                `inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold ${
+                  isActive ? "bg-blue-50 text-blue-700" : "text-slate-600"
+                }`
+              }
+            >
+              <Sparkles size={16} />
+              Forge
+            </NavLink>
+            <NavLink
+              to="/leaderboard"
+              className={({ isActive }) =>
+                `inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold ${
+                  isActive ? "bg-blue-50 text-blue-700" : "text-slate-600"
+                }`
+              }
+            >
+              <Trophy size={16} />
+              Leaderboard
+            </NavLink>
+            {showAdmin ? (
               <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === "/"}
+                to="/admin"
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-bold transition ${
-                    isActive ? "bg-moss text-white" : "text-slate-600 hover:bg-slate-100"
-                  }`
+                  `rounded-lg px-3 py-2 text-sm font-bold ${isActive ? "bg-blue-50 text-blue-700" : "text-slate-600"}`
                 }
               >
-                <item.icon size={18} />
-                {item.label}
+                Admin
               </NavLink>
-            ))}
-          </nav>
-
-          <div className="mt-auto rounded-lg bg-mint/70 p-4">
-            <div className="flex items-center gap-2 text-sm font-black">
-              <Flame size={17} />
-              {profile?.streak || 0} day streak
-            </div>
-            <p className="mt-2 text-xs text-slate-600">Tiny wins compound. Keep today alive.</p>
-          </div>
-
-          <button
-            type="button"
-            onClick={logout}
-            className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-black/10 px-3 py-2 text-sm font-bold text-slate-600"
-          >
-            <LogOut size={16} />
-            Log out
-          </button>
-        </aside>
-
-        <section className="min-w-0 flex-1">
-          <header className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-black/10 bg-white/80 px-4 py-3 shadow-soft backdrop-blur lg:hidden">
-            <div className="font-black">LockOn Revision</div>
-            <button type="button" onClick={logout} className="rounded-lg border border-black/10 p-2">
-              <LogOut size={17} />
-            </button>
-          </header>
-
-          <nav className="mb-4 grid grid-cols-4 gap-2 lg:hidden">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === "/"}
-                className={({ isActive }) =>
-                  `grid place-items-center rounded-lg px-2 py-3 text-xs font-bold ${
-                    isActive ? "bg-moss text-white" : "bg-white text-slate-600"
-                  }`
-                }
+            ) : null}
+            {isFirebaseConfigured ? (
+              <button
+                type="button"
+                onClick={logout}
+                className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 shadow-sm"
+                aria-label="Log out"
               >
-                <item.icon size={18} />
-                <span className="mt-1">{item.label}</span>
-              </NavLink>
-            ))}
+                <LogOut size={18} />
+              </button>
+            ) : null}
           </nav>
+        </div>
+      </header>
 
-          {children}
-        </section>
-      </div>
+      <section className="mx-auto max-w-6xl px-4 py-6">{children}</section>
+      <AiSidebar />
     </main>
   );
 }
