@@ -65,10 +65,12 @@ export function ensureLocalUser({ name, email }) {
     profile: createDefaultProfile(user),
     subjects: [],
     units: [],
+    subUnits: [],
     lessons: [],
     questions: [],
     answers: [],
     files: [],
+    forgeSourceText: {},
   };
   state.users[uid].profile = {
     ...state.users[uid].profile,

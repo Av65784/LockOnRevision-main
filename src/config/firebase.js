@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getFunctions } from "firebase/functions";
 import { getStorage } from "firebase/storage";
@@ -11,7 +11,6 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 export const isFirebaseConfigured = [
@@ -19,6 +18,7 @@ export const isFirebaseConfigured = [
   firebaseConfig.authDomain,
   firebaseConfig.projectId,
   firebaseConfig.storageBucket,
+  firebaseConfig.messagingSenderId,
   firebaseConfig.appId,
 ].every(Boolean);
 
@@ -26,5 +26,4 @@ export const app = isFirebaseConfigured ? initializeApp(firebaseConfig) : null;
 export const auth = app ? getAuth(app) : null;
 export const db = app ? getFirestore(app) : null;
 export const storage = app ? getStorage(app) : null;
-export const functions = app ? getFunctions(app, "asia-south1") : null;
-export const googleProvider = new GoogleAuthProvider();
+export const functions = app ? getFunctions(app) : null;
